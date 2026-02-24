@@ -1,0 +1,63 @@
+@use '@angular/material' as mat;
+
+// ─── Custom Angular Material Theme ───────────────────────────────────────────
+
+@include mat.core();
+
+// Primary: Professional Blue (#1565C0)
+$hrms-primary: mat.define-palette(mat.$blue-palette, 800, 600, 900);
+// Accent: Teal (#00897B)
+$hrms-accent: mat.define-palette(mat.$teal-palette, 700, 500, 900);
+// Warn: Red
+$hrms-warn: mat.define-palette(mat.$red-palette, 700);
+
+$hrms-theme: mat.define-light-theme((
+  color: (
+    primary: $hrms-primary,
+    accent:  $hrms-accent,
+    warn:    $hrms-warn,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Roboto, "Helvetica Neue", sans-serif'
+  ),
+  density: 0,
+));
+
+@include mat.all-component-themes($hrms-theme);
+
+// ─── Tailwind ─────────────────────────────────────────────────────────────────
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ─── Global ───────────────────────────────────────────────────────────────────
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+// ─── Material + Tailwind compatibility ───────────────────────────────────────
+
+// Tailwind base resets button font — restore for Material buttons
+button {
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+// Ensure mat-form-field fills its container when w-full is applied
+mat-form-field.w-full {
+  width: 100%;
+}
+
+// Tighten default mat-form-field bottom spacing
+.mat-mdc-form-field-subscript-wrapper {
+  margin-bottom: -0.5em;
+}
