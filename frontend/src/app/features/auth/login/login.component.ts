@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -19,16 +18,15 @@ import { AuthService } from '../../../core/services/auth.service';
     ReactiveFormsModule,
     RouterLink,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatDividerModule,
+    MatSnackBarModule,
   ],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-800 to-primary-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full">
+      <div class="w-full max-w-md">
 
         <!-- Brand mark -->
         <div class="text-center mb-8">
@@ -36,64 +34,76 @@ import { AuthService } from '../../../core/services/auth.service';
             <mat-icon class="text-primary-800" style="font-size: 2rem; width: 2rem; height: 2rem;">groups</mat-icon>
           </div>
           <h1 class="text-3xl font-bold text-white tracking-tight">HR Management</h1>
-          <p class="text-primary-200 mt-1 text-sm">Sign in to your account</p>
+          <p class="text-blue-200 mt-1 text-sm">Sign in to your account</p>
         </div>
 
         <mat-card class="shadow-2xl rounded-2xl overflow-hidden">
           <mat-card-content class="p-8">
 
             <!-- Login Form -->
-            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
 
               <!-- Email -->
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Email address</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
-                <input
-                  matInput
-                  type="email"
-                  formControlName="email"
-                  placeholder="you@company.com"
-                  autocomplete="email"
-                />
-                <mat-error *ngIf="f['email'].hasError('required')">Email is required</mat-error>
-                <mat-error *ngIf="f['email'].hasError('email')">Enter a valid email</mat-error>
-              </mat-form-field>
-
-              <!-- Password -->
-              <mat-form-field class="w-full mt-3" appearance="outline">
-                <mat-label>Password</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
-                <input
-                  matInput
-                  [type]="hidePassword ? 'password' : 'text'"
-                  formControlName="password"
-                  placeholder="Enter your password"
-                  autocomplete="current-password"
-                />
-                <button
-                  mat-icon-button
-                  matSuffix
-                  type="button"
-                  (click)="hidePassword = !hidePassword"
-                  [attr.aria-label]="'Toggle password visibility'"
-                >
-                  <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-                <mat-error *ngIf="f['password'].hasError('required')">Password is required</mat-error>
-              </mat-form-field>
-
-              <!-- Forgot password -->
-              <div class="flex justify-end mt-1 mb-5">
-                <a routerLink="/auth/forgot-password" class="text-sm text-primary-700 hover:text-primary-900 font-medium">
-                  Forgot password?
-                </a>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">email</mat-icon>
+                  </span>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    placeholder="you@company.com"
+                    autocomplete="email"
+                    class="field-input"
+                    [class.field-input--error]="f['email'].invalid && f['email'].touched"
+                  />
+                </div>
+                <p *ngIf="f['email'].invalid && f['email'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  <span *ngIf="f['email'].hasError('required')">Email is required</span>
+                  <span *ngIf="f['email'].hasError('email')">Enter a valid email address</span>
+                </p>
               </div>
 
-              <!-- Error Banner -->
-              <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                <mat-icon class="text-red-500 text-base" style="font-size: 1.1rem;">error_outline</mat-icon>
-                {{ errorMessage }}
+              <!-- Password -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">lock</mat-icon>
+                  </span>
+                  <input
+                    [type]="hidePassword ? 'password' : 'text'"
+                    formControlName="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    class="field-input pr-12"
+                    [class.field-input--error]="f['password'].invalid && f['password'].touched"
+                  />
+                  <button
+                    type="button"
+                    (click)="hidePassword = !hidePassword"
+                    tabindex="-1"
+                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150"
+                  >
+                    <mat-icon style="font-size: 1.2rem; width: 1.2rem; height: 1.2rem;">
+                      {{ hidePassword ? 'visibility_off' : 'visibility' }}
+                    </mat-icon>
+                  </button>
+                </div>
+                <p *ngIf="f['password'].invalid && f['password'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  <span *ngIf="f['password'].hasError('required')">Password is required</span>
+                  <span *ngIf="f['password'].hasError('minlength')">Must be at least 6 characters</span>
+                </p>
+              </div>
+
+              <!-- Forgot password -->
+              <div class="flex justify-end -mt-1">
+                <a routerLink="/auth/forgot-password" class="text-sm text-primary-700 hover:text-primary-900 font-medium transition-colors">
+                  Forgot password?
+                </a>
               </div>
 
               <!-- Submit -->
@@ -101,7 +111,7 @@ import { AuthService } from '../../../core/services/auth.service';
                 mat-raised-button
                 color="primary"
                 type="submit"
-                class="w-full h-12 text-base font-semibold rounded-lg"
+                class="w-full h-12 text-base font-semibold rounded-xl"
                 [disabled]="loginForm.invalid || loading"
               >
                 <span *ngIf="!loading" class="flex items-center justify-center gap-2">
@@ -109,16 +119,16 @@ import { AuthService } from '../../../core/services/auth.service';
                 </span>
                 <mat-spinner *ngIf="loading" diameter="24" class="mx-auto"></mat-spinner>
               </button>
+
             </form>
 
             <mat-divider class="my-6"></mat-divider>
 
             <!-- Register Link -->
-            <p class="text-center text-sm text-gray-500 mb-6">
+            <p class="text-center text-sm text-gray-500">
               Don't have an account?
               <a routerLink="/auth/register" class="text-primary-700 hover:text-primary-900 font-semibold ml-1">Create one</a>
             </p>
-
 
           </mat-card-content>
         </mat-card>
@@ -126,31 +136,28 @@ import { AuthService } from '../../../core/services/auth.service';
       </div>
     </div>
   `,
-  styles: [`
-    :host { display: block; }
-    .primary-200 { color: #90caf9; }
-  `]
+  styles: [`:host { display: block; }`]
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = false;
-  errorMessage = '';
   hidePassword = true;
-  returnUrl = '/dashboard';
+  private returnUrl = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '';
 
     this.loginForm = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -160,16 +167,38 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) return;
 
     this.loading = true;
-    this.errorMessage = '';
-
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email, password).subscribe({
-      next: () => this.router.navigate([this.returnUrl]),
+      next: () => {
+        const destination = this.returnUrl || this.getRoleRedirect();
+        this.router.navigate([destination]);
+      },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Invalid email or password. Please try again.';
+        const message = err.error?.message || 'Invalid email or password. Please try again.';
+        this.snackBar.open(message, 'Dismiss', {
+          duration: 4000,
+          panelClass: ['snack-error'],
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
       },
     });
+  }
+
+  private getRoleRedirect(): string {
+    const role = this.authService.getUserFromToken()?.role;
+    switch (role) {
+      case 'Admin':
+      case 'HR':
+        return '/dashboard';
+      case 'Manager':
+        return '/attendance';
+      case 'Employee':
+        return '/profile';
+      default:
+        return '/dashboard';
+    }
   }
 }

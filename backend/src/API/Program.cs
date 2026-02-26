@@ -2,6 +2,7 @@ using System.Text;
 using HRManagement.API.Middleware;
 using HRManagement.Application.Interfaces;
 using HRManagement.Application.Services;
+using HRManagement.Infrastructure.Repositories;
 using HRManagement.Infrastructure.Data;
 using HRManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,7 +13,10 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+        opts.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger with JWT support
@@ -101,6 +105,12 @@ builder.Services.AddScoped<IApplicationDbContext>(sp =>
 
 // Register Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IDesignationService, DesignationService>();
+
+// Register Infrastructure Repositories
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
 // Register Infrastructure Services
 builder.Services.AddScoped<ITokenService, TokenService>();

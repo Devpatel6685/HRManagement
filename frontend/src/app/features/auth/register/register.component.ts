@@ -10,11 +10,8 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../../core/services/auth.service';
@@ -28,17 +25,14 @@ import { RegisterRequest } from '../../../models/auth.model';
     ReactiveFormsModule,
     RouterLink,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
     MatProgressSpinnerModule,
     MatDividerModule,
   ],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-800 to-primary-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-lg w-full">
+      <div class="w-full max-w-lg">
 
         <!-- Brand mark -->
         <div class="text-center mb-8">
@@ -58,88 +52,151 @@ import { RegisterRequest } from '../../../models/auth.model';
         <mat-card class="shadow-2xl rounded-2xl overflow-hidden">
           <mat-card-content class="p-8">
 
-            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
 
               <!-- First + Last Name row -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <mat-form-field appearance="outline">
-                  <mat-label>First Name</mat-label>
-                  <mat-icon matPrefix class="mr-2 text-gray-400">badge</mat-icon>
-                  <input matInput formControlName="firstName" placeholder="John" />
-                  <mat-error *ngIf="f['firstName'].hasError('required')">Required</mat-error>
-                  <mat-error *ngIf="f['firstName'].hasError('maxlength')">Max 100 characters</mat-error>
-                </mat-form-field>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Last Name</mat-label>
-                  <input matInput formControlName="lastName" placeholder="Doe" />
-                  <mat-error *ngIf="f['lastName'].hasError('required')">Required</mat-error>
-                  <mat-error *ngIf="f['lastName'].hasError('maxlength')">Max 100 characters</mat-error>
-                </mat-form-field>
+                <!-- First Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <mat-icon class="field-icon">badge</mat-icon>
+                    </span>
+                    <input
+                      formControlName="firstName"
+                      placeholder="John"
+                      class="field-input"
+                      [class.field-input--error]="f['firstName'].invalid && f['firstName'].touched"
+                    />
+                  </div>
+                  <p *ngIf="f['firstName'].invalid && f['firstName'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                    <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                    <span *ngIf="f['firstName'].hasError('required')">Required</span>
+                    <span *ngIf="f['firstName'].hasError('maxlength')">Max 100 characters</span>
+                  </p>
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
+                  <input
+                    formControlName="lastName"
+                    placeholder="Doe"
+                    class="field-input field-input--no-icon"
+                    [class.field-input--error]="f['lastName'].invalid && f['lastName'].touched"
+                  />
+                  <p *ngIf="f['lastName'].invalid && f['lastName'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                    <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                    <span *ngIf="f['lastName'].hasError('required')">Required</span>
+                    <span *ngIf="f['lastName'].hasError('maxlength')">Max 100 characters</span>
+                  </p>
+                </div>
+
               </div>
 
               <!-- Email -->
-              <mat-form-field class="w-full mt-3" appearance="outline">
-                <mat-label>Email address</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
-                <input matInput type="email" formControlName="email" placeholder="john@company.com" autocomplete="email" />
-                <mat-error *ngIf="f['email'].hasError('required')">Email is required</mat-error>
-                <mat-error *ngIf="f['email'].hasError('email')">Enter a valid email</mat-error>
-              </mat-form-field>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">email</mat-icon>
+                  </span>
+                  <input
+                    type="email"
+                    formControlName="email"
+                    placeholder="john@company.com"
+                    autocomplete="email"
+                    class="field-input"
+                    [class.field-input--error]="f['email'].invalid && f['email'].touched"
+                  />
+                </div>
+                <p *ngIf="f['email'].invalid && f['email'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  <span *ngIf="f['email'].hasError('required')">Email is required</span>
+                  <span *ngIf="f['email'].hasError('email')">Enter a valid email address</span>
+                </p>
+              </div>
 
               <!-- Role -->
-              <mat-form-field class="w-full mt-3" appearance="outline">
-                <mat-label>Role</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">manage_accounts</mat-icon>
-                <mat-select formControlName="role">
-                  <mat-option *ngFor="let r of roles" [value]="r.value">
-                    <span class="flex items-center gap-2">{{ r.label }}</span>
-                  </mat-option>
-                </mat-select>
-                <mat-error *ngIf="f['role'].hasError('required')">Role is required</mat-error>
-              </mat-form-field>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">manage_accounts</mat-icon>
+                  </span>
+                  <select
+                    formControlName="role"
+                    class="field-input field-select"
+                    [class.field-input--error]="f['role'].invalid && f['role'].touched"
+                  >
+                    <option *ngFor="let r of roles" [ngValue]="r.value">{{ r.label }}</option>
+                  </select>
+                </div>
+                <p *ngIf="f['role'].invalid && f['role'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  Role is required
+                </p>
+              </div>
 
               <!-- Password -->
-              <mat-form-field class="w-full mt-3" appearance="outline">
-                <mat-label>Password</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
-                <input
-                  matInput
-                  [type]="hidePassword ? 'password' : 'text'"
-                  formControlName="password"
-                  placeholder="Min. 8 characters"
-                  autocomplete="new-password"
-                />
-                <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-                  <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-                <mat-error *ngIf="f['password'].hasError('required')">Password is required</mat-error>
-                <mat-error *ngIf="f['password'].hasError('minlength')">Minimum 8 characters</mat-error>
-              </mat-form-field>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">lock</mat-icon>
+                  </span>
+                  <input
+                    [type]="hidePassword ? 'password' : 'text'"
+                    formControlName="password"
+                    placeholder="Min. 8 characters"
+                    autocomplete="new-password"
+                    class="field-input pr-12"
+                    [class.field-input--error]="f['password'].invalid && f['password'].touched"
+                  />
+                  <button type="button" (click)="hidePassword = !hidePassword" tabindex="-1"
+                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                    <mat-icon style="font-size: 1.2rem; width: 1.2rem; height: 1.2rem;">{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                </div>
+                <p *ngIf="f['password'].invalid && f['password'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  <span *ngIf="f['password'].hasError('required')">Password is required</span>
+                  <span *ngIf="f['password'].hasError('minlength')">Minimum 8 characters</span>
+                </p>
+              </div>
 
               <!-- Confirm Password -->
-              <mat-form-field class="w-full mt-3" appearance="outline">
-                <mat-label>Confirm Password</mat-label>
-                <mat-icon matPrefix class="mr-2 text-gray-400">lock_reset</mat-icon>
-                <input
-                  matInput
-                  [type]="hideConfirmPassword ? 'password' : 'text'"
-                  formControlName="confirmPassword"
-                  placeholder="Re-enter password"
-                  autocomplete="new-password"
-                />
-                <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword">
-                  <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-                <mat-error *ngIf="f['confirmPassword'].hasError('required')">Please confirm your password</mat-error>
-                <mat-error *ngIf="registerForm.hasError('passwordMismatch') && !f['confirmPassword'].hasError('required')">
-                  Passwords do not match
-                </mat-error>
-              </mat-form-field>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <mat-icon class="field-icon">lock_reset</mat-icon>
+                  </span>
+                  <input
+                    [type]="hideConfirmPassword ? 'password' : 'text'"
+                    formControlName="confirmPassword"
+                    placeholder="Re-enter password"
+                    autocomplete="new-password"
+                    class="field-input pr-12"
+                    [class.field-input--error]="(f['confirmPassword'].invalid || registerForm.hasError('passwordMismatch')) && f['confirmPassword'].touched"
+                  />
+                  <button type="button" (click)="hideConfirmPassword = !hideConfirmPassword" tabindex="-1"
+                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                    <mat-icon style="font-size: 1.2rem; width: 1.2rem; height: 1.2rem;">{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                </div>
+                <p *ngIf="(f['confirmPassword'].invalid || registerForm.hasError('passwordMismatch')) && f['confirmPassword'].touched" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon style="font-size: 0.85rem; width: 0.85rem; height: 0.85rem;">error_outline</mat-icon>
+                  <span *ngIf="f['confirmPassword'].hasError('required')">Please confirm your password</span>
+                  <span *ngIf="registerForm.hasError('passwordMismatch') && !f['confirmPassword'].hasError('required')">Passwords do not match</span>
+                </p>
+              </div>
 
               <!-- Error Banner -->
-              <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                <mat-icon class="text-red-500 text-base" style="font-size: 1.1rem;">error_outline</mat-icon>
+              <div *ngIf="errorMessage" class="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                <mat-icon class="text-red-500" style="font-size: 1.1rem; width: 1.1rem; height: 1.1rem;">error_outline</mat-icon>
                 {{ errorMessage }}
               </div>
 
@@ -148,7 +205,7 @@ import { RegisterRequest } from '../../../models/auth.model';
                 mat-raised-button
                 color="primary"
                 type="submit"
-                class="w-full h-12 mt-6 text-base font-semibold rounded-lg"
+                class="w-full h-12 text-base font-semibold rounded-xl"
                 [disabled]="registerForm.invalid || loading"
               >
                 <span *ngIf="!loading" class="flex items-center justify-center gap-2">
@@ -156,6 +213,7 @@ import { RegisterRequest } from '../../../models/auth.model';
                 </span>
                 <mat-spinner *ngIf="loading" diameter="24" class="mx-auto"></mat-spinner>
               </button>
+
             </form>
 
             <mat-divider class="my-6"></mat-divider>
