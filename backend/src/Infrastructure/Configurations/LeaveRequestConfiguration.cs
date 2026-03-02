@@ -11,6 +11,7 @@ public class LeaveRequestConfiguration : IEntityTypeConfiguration<LeaveRequest>
         builder.ToTable("LeaveRequests");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Reason).HasMaxLength(500);
+        builder.Property(e => e.RejectionReason).HasMaxLength(500).IsRequired(false);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
 
         builder.HasOne(e => e.Employee)

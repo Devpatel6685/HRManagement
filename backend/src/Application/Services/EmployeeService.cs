@@ -109,6 +109,22 @@ public class EmployeeService : IEmployeeService
         // Saves both User and Employee in one transaction
         await _employeeRepository.CreateAsync(employee, cancellationToken);
 
+        // Seed leave balances for the current year
+        var leaveTypes  = await _context.LeaveTypes.ToListAsync(cancellationToken);
+        var currentYear = DateTime.UtcNow.Year;
+        foreach (var lt in leaveTypes)
+        {
+            _context.LeaveBalances.Add(new LeaveBalance
+            {
+                EmployeeId  = employee.Id,
+                LeaveTypeId = lt.Id,
+                Year        = currentYear,
+                TotalDays   = lt.MaxDaysPerYear,
+                UsedDays    = 0,
+            });
+        }
+        await _context.SaveChangesAsync(cancellationToken);
+
         var created = await _employeeRepository.GetByIdAsync(employee.Id, cancellationToken)
             ?? throw new InvalidOperationException("Failed to retrieve the created employee.");
 

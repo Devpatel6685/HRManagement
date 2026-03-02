@@ -12,6 +12,8 @@ public class PerformanceReviewConfiguration : IEntityTypeConfiguration<Performan
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Period).IsRequired().HasMaxLength(50);
         builder.Property(e => e.Comments).HasMaxLength(1000);
+        builder.Property(e => e.Strengths).HasMaxLength(1000);
+        builder.Property(e => e.Improvements).HasMaxLength(1000);
 
         builder.HasOne(e => e.Employee)
                .WithMany(emp => emp.PerformanceReviews)

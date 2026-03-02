@@ -1,4 +1,5 @@
 using HRManagement.Domain.Entities;
+using HRManagement.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,6 +25,7 @@ public class DataSeeder
         await SeedDesignationsAsync();
         await SeedLeaveTypesAsync();
         await SeedAdminUserAsync();
+        await SeedLeaveBalancesAsync();
     }
 
     private async Task SeedRolesAsync()
@@ -111,8 +113,59 @@ public class DataSeeder
             IsActive     = true,
         };
 
-        await _context.Users.AddAsync(adminUser);
+        _context.Users.Add(adminUser);
+
+        _context.Employees.Add(new Employee
+        {
+            UserId       = adminUser.Id,
+            EmployeeCode = "EMP001",
+            FirstName    = "System",
+            LastName     = "Admin",
+            JoinDate     = DateOnly.FromDateTime(DateTime.UtcNow),
+            Status       = EmployeeStatus.Active,
+        });
+
         await _context.SaveChangesAsync();
         _logger.LogInformation("Seeded admin user: {Email}", adminUser.Email);
+    }
+
+    private async Task SeedLeaveBalancesAsync()
+    {
+        var leaveTypes = await _context.LeaveTypes.ToListAsync();
+        if (!leaveTypes.Any()) return;
+
+        var employees   = await _context.Employees.ToListAsync();
+        var currentYear = DateTime.UtcNow.Year;
+        var added       = 0;
+
+        foreach (var employee in employees)
+        {
+            foreach (var lt in leaveTypes)
+            {
+                var exists = await _context.LeaveBalances.AnyAsync(b =>
+                    b.EmployeeId  == employee.Id &&
+                    b.LeaveTypeId == lt.Id &&
+                    b.Year        == currentYear);
+
+                if (!exists)
+                {
+                    _context.LeaveBalances.Add(new LeaveBalance
+                    {
+                        EmployeeId  = employee.Id,
+                        LeaveTypeId = lt.Id,
+                        Year        = currentYear,
+                        TotalDays   = lt.MaxDaysPerYear,
+                        UsedDays    = 0,
+                    });
+                    added++;
+                }
+            }
+        }
+
+        if (added > 0)
+        {
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Seeded {Count} leave balance record(s)", added);
+        }
     }
 }

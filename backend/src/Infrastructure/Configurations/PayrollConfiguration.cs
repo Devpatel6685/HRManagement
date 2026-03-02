@@ -16,6 +16,7 @@ public class PayrollConfiguration : IEntityTypeConfiguration<Payroll>
         builder.Property(e => e.Allowances).HasColumnType("decimal(18,2)");
         builder.Property(e => e.Deductions).HasColumnType("decimal(18,2)");
         builder.Property(e => e.NetSalary).HasColumnType("decimal(18,2)");
+        builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
 
         builder.HasOne(e => e.Employee)
                .WithMany(emp => emp.Payrolls)

@@ -11,6 +11,16 @@ public interface IApplicationDbContext
     DbSet<Department> Departments { get; }
     DbSet<Designation> Designations { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
+    DbSet<Attendance> Attendances { get; }
+    DbSet<AttendanceBreak> AttendanceBreaks { get; }
+    DbSet<LeaveType> LeaveTypes { get; }
+    DbSet<LeaveRequest> LeaveRequests { get; }
+    DbSet<LeaveBalance> LeaveBalances { get; }
+    DbSet<Payroll> Payrolls { get; }
+    DbSet<JobPosting> JobPostings { get; }
+    DbSet<Applicant> Applicants { get; }
+    DbSet<PerformanceReview> PerformanceReviews { get; }
+    DbSet<Asset> Assets { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

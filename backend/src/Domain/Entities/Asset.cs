@@ -10,6 +10,7 @@ public class Asset : BaseEntity
     public string Category { get; set; } = string.Empty;
     public Guid? AssignedToEmployeeId { get; set; }
     public DateTime? AssignedDate { get; set; }
+    public DateTime? ReturnDate { get; set; }
     public AssetStatus Status { get; set; } = AssetStatus.Available;
 
     public Employee? AssignedToEmployee { get; set; }

@@ -11,6 +11,7 @@ public class JobPostingConfiguration : IEntityTypeConfiguration<JobPosting>
         builder.ToTable("JobPostings");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Title).IsRequired().HasMaxLength(200);
+        builder.Property(e => e.Requirements).HasMaxLength(2000);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
 
         builder.HasOne(e => e.Department)

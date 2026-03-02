@@ -9,6 +9,7 @@ public class LeaveBalance : BaseEntity
     public int Year { get; set; }
     public int TotalDays { get; set; }
     public int UsedDays { get; set; }
+    public int RemainingDays { get; set; }
 
     public Employee Employee { get; set; } = null!;
     public LeaveType LeaveType { get; set; } = null!;

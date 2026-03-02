@@ -1,16 +1,17 @@
 import { Routes } from '@angular/router';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-
-@Component({
-  selector: 'app-assets',
-  standalone: true,
-  imports: [CommonModule, MatCardModule],
-  template: '<div><h1 class="text-3xl font-bold mb-6">Assets</h1><mat-card class="p-6"><p>Assets module - Coming soon!</p></mat-card></div>'
-})
-export class AssetsComponent {}
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const assetsRoutes: Routes = [
-  { path: '', component: AssetsComponent }
+  {
+    path: '',
+    canActivate: [roleGuard],
+    data: { roles: ['Admin', 'HR'] },
+    loadComponent: () =>
+      import('./asset-list/asset-list.component').then(m => m.AssetListComponent),
+  },
+  {
+    path: 'my',
+    loadComponent: () =>
+      import('./assign-return/my-assets.component').then(m => m.MyAssetsComponent),
+  },
 ];

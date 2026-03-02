@@ -1,16 +1,21 @@
 import { Routes } from '@angular/router';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-
-@Component({
-  selector: 'app-leave',
-  standalone: true,
-  imports: [CommonModule, MatCardModule],
-  template: '<div><h1 class="text-3xl font-bold mb-6">Leave Management</h1><mat-card class="p-6"><p>Leave module - Coming soon!</p></mat-card></div>'
-})
-export class LeaveComponent {}
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const leaveRoutes: Routes = [
-  { path: '', component: LeaveComponent }
+  {
+    path: '',
+    loadComponent: () =>
+      import('./apply/leave-request.component').then(
+        m => m.LeaveRequestComponent
+      ),
+  },
+  {
+    path: 'approvals',
+    loadComponent: () =>
+      import('./approvals/leave-approval.component').then(
+        m => m.LeaveApprovalComponent
+      ),
+    canActivate: [roleGuard],
+    data: { roles: ['Admin', 'HR', 'Manager'] },
+  },
 ];

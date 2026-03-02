@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Designation> Designations => Set<Designation>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<AttendanceBreak> AttendanceBreaks => Set<AttendanceBreak>();
     public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
     public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();

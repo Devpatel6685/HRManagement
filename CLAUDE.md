@@ -5,225 +5,140 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # HR Management System
 
 ## Stack
-Backend:  .NET 8 Web API + Clean Architecture
-Frontend: Angular 17 + Angular Material + Tailwind CSS
-Database: PostgreSQL + Entity Framework Core
-Auth:     JWT Bearer Tokens with role-based claims
+- Backend:  .NET 8 Web API + Clean Architecture
+- Frontend: Angular 17 standalone components + Angular Material + Tailwind CSS
+- Database: PostgreSQL 192.168.0.222:5432 / `HRManagementDB` / `postgres:postgres`
+- Auth:     JWT Bearer (HS256, 60 min) + RefreshToken rotation stored in DB (7 days)
 
 ## Roles
-Admin, HR, Manager, Employee
+`Admin`, `HR`, `Manager`, `Employee`
 
-## Key Packages
-- **Backend:** iTextSharp (PDF generation), MailKit (Email sending)
-- **Frontend:** Chart.js (Charts/Analytics), Angular CDK DragDrop (Kanban boards)
-
-## Backend Naming Conventions (.NET / C#)
-Classes, Methods, Properties  → PascalCase        e.g. EmployeeService
-Variables, Parameters         → camelCase          e.g. employeeId
-Private Fields                → _camelCase         e.g. _employeeName
-Interfaces                    → I + PascalCase     e.g. IEmployeeRepository
-Constants                     → UPPER_SNAKE_CASE   e.g. MAX_LEAVES_PER_YEAR
-DTOs                          → Name + Dto         e.g. EmployeeDto
-Controllers                   → Name + Controller  e.g. EmployeeController
-DB Tables                     → PascalCase plural  e.g. Employees
-DB Columns                    → PascalCase         e.g. EmployeeCode
-
-## Frontend Naming Conventions (Angular / TypeScript)
-Component selectors  → kebab-case          e.g. app-employee-list
-Files                → kebab-case           e.g. employee-list.component.ts
-Classes, Services    → PascalCase           e.g. EmployeeService
-Variables            → camelCase            e.g. employeeList
-Observables          → camelCase + $        e.g. employees$
-Constants            → UPPER_SNAKE_CASE     e.g. API_BASE_URL
-Interfaces           → PascalCase, no I     e.g. Employee (not IEmployee)
-
-## General Rules (Both)
-No magic numbers     → use named constants or enums
-No logic in controllers or components → services only
-Max function length  → 30 lines, split if longer
-No commented-out code → delete it, use Git history
-Async methods        → always use async/await
-One class per file   → filename must match class name
-
-## Architecture Rules
-Repository pattern + Service layer in backend always
-All endpoints must have [Authorize] unless explicitly public
-Use AutoMapper for all DTO mappings — no manual mapping
-Angular: feature modules with lazy loading, reactive forms only
-
-## Project Structure (Clean Architecture)
-
-### Backend (/backend)
-```
-/backend
-  HRManagement.sln
-  /src
-    /HRManagement.API          → Controllers, Middleware, Program.cs
-    /HRManagement.Application  → Services, DTOs, Interfaces, Validators
-    /HRManagement.Domain       → Entities, Enums
-    /HRManagement.Infrastructure → DbContext, Repositories, Email, PDF
-  /tests
-    /HRManagement.Tests        → Unit and integration tests
-```
-
-### Frontend (/frontend)
-```
-/frontend
-  /src/app
-    /core       → Guards, Interceptors, Auth Service
-    /shared     → Reusable Components, Pipes, Directives
-    /models     → TypeScript interfaces matching backend DTOs
-    /features
-      /auth
-        /login
-        /register
-        /forgot-password
-      /employees
-        /list
-        /detail
-        /add-edit
-      /departments
-        /list
-        /add-edit
-      /attendance
-        /calendar
-        /team-view
-        /check-in
-      /leave
-        /apply
-        /approvals
-        /balance
-      /payroll
-        /generate
-        /payslips
-        /download
-      /recruitment
-        /jobs
-        /applicant-pipeline
-      /performance
-        /reviews
-        /ratings
-      /training
-        /trainings
-        /assignments
-      /assets
-        /asset-list
-        /assign-return
-      /documents
-        /upload
-        /view-per-employee
-```
+---
 
 ## Common Commands
 
-### Backend (.NET)
+### Backend (run from `/backend`)
+
 ```bash
-# Navigate to backend
-cd backend
+# Run API — CORRECT path (folder is src/API, not src/HRManagement.API)
+dotnet run --project src/API/HRManagement.API.csproj
+# HTTP: http://localhost:5284  |  Swagger: http://localhost:5284/swagger
 
-# Run API (Development)
-dotnet run --project src/HRManagement.API
-# API runs on: http://localhost:5284 (HTTP) and https://localhost:7052 (HTTPS)
-# Swagger UI: http://localhost:5284/swagger
+# If server is running and DLLs are locked, build only the Application layer to check errors
+dotnet build src/Application/HRManagement.Application.csproj
 
-# Run with specific configuration
-dotnet run --project src/HRManagement.API --configuration Release
+# Stop the running server on Windows before migrations or full builds
+powershell -Command "Get-Process dotnet -ErrorAction SilentlyContinue | Stop-Process -Force"
 
-# Watch mode (auto-rebuild on changes)
-dotnet watch --project src/HRManagement.API
-
-# Run tests
-dotnet test
-
-# Run specific test
-dotnet test --filter "FullyQualifiedName~TestClassName.TestMethodName"
-
-# Add migration
-dotnet ef migrations add <MigrationName> --project src/HRManagement.Infrastructure --startup-project src/HRManagement.API
-
-# Update database
-dotnet ef database update --project src/HRManagement.Infrastructure --startup-project src/HRManagement.API
-
-# Remove last migration (if not applied)
-dotnet ef migrations remove --project src/HRManagement.Infrastructure --startup-project src/HRManagement.API
-
-# Build solution
-dotnet build
-
-# Clean solution
-dotnet clean
+# EF Core migrations — CORRECT paths
+dotnet ef migrations add <Name>  --project src/Infrastructure --startup-project src/API
+dotnet ef database update        --project src/Infrastructure --startup-project src/API
+dotnet ef migrations remove      --project src/Infrastructure --startup-project src/API
 ```
 
-### Frontend (Angular)
+### Frontend (run from `/frontend`)
+
 ```bash
-# Navigate to frontend
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run dev server (with proxy to backend)
-npm start  # or ng serve
-# Runs on http://localhost:4200 with API proxy to http://localhost:5284
-
-# Run without proxy
-ng serve --no-proxy
-
-# Watch mode (auto-rebuild)
-npm run watch  # or ng build --watch --configuration development
-
-# Build for production
-npm run build  # or ng build --configuration production
-
-# Run tests
-npm test  # or ng test
-
-# Run tests in headless mode
+npm start          # ng serve with proxy → http://localhost:4200
+npm run build      # production build
+npm run lint       # ng lint
+npm test           # ng test (Karma)
 ng test --watch=false --browsers=ChromeHeadless
-
-# Generate new component
-ng generate component features/<module>/<component-name>
-# Example: ng generate component features/employees/employee-list
-
-# Generate new service
-ng generate service core/services/<service-name>
-
-# Lint
-npm run lint  # or ng lint
 ```
 
-### Running Both Together (Development)
-```bash
-# Terminal 1 - Backend
-cd backend && dotnet run --project src/HRManagement.API
+---
 
-# Terminal 2 - Frontend
-cd frontend && npm start
+## Backend Architecture
+
+### Folder Names (actual on disk)
+```
+backend/src/
+  API/            → Controllers, Middleware, Program.cs
+  Application/    → Services, DTOs, Interfaces, Mappings
+  Domain/         → Entities, Enums, Common/BaseEntity
+  Infrastructure/ → ApplicationDbContext, Configurations, Migrations, Repositories, Services
 ```
 
-## Configuration
+### Two Service Patterns in use
 
-### Backend
-- **Connection String:** Update in `backend/src/HRManagement.API/appsettings.json` and `appsettings.Development.json`
-- **JWT Secret:** Change in `appsettings.json` before deployment (JwtSettings:Secret)
-- **API URLs:** Configured in `Properties/launchSettings.json` (http://localhost:5284, https://localhost:7052)
+| Pattern | Used for | DTO mapping |
+|---|---|---|
+| `IApplicationDbContext` + inline `.Select()` LINQ | Department, Designation, Auth | Manual / inline projection |
+| `IEmployeeRepository` + AutoMapper | Employee | `EmployeeMappingProfile` |
 
-### Frontend
-- **API Base URL:** Configure in `frontend/src/environments/environment.ts` (currently: http://localhost:5284/api)
-- **Production URL:** Configure in `frontend/src/environments/environment.prod.ts`
-- **Proxy Config:** API proxy settings in `frontend/proxy.conf.json`
+> **Rule override:** The "Use AutoMapper for everything" rule does NOT apply to Department, Designation, or Auth — they all use manual mapping. Only Employee uses AutoMapper.
 
-## Authentication Flow
-- Login → JWT token with role claims (Admin, HR, Manager, Employee)
-- All requests include Authorization: Bearer <token>
-- API validates JWT and checks role-based permissions via [Authorize(Roles = "...")]
+### ExceptionMiddleware → HTTP mapping
+| Exception | HTTP |
+|---|---|
+| `KeyNotFoundException` | 404 |
+| `InvalidOperationException` | 400 |
+| `ArgumentException` | 400 |
+| `UnauthorizedAccessException` | 401 |
 
-## Database Relationships (Key Entities)
-- Employee → Department (Many-to-One)
-- Employee → LeaveRequest (One-to-Many)
-- Employee → Payroll (One-to-Many)
-- Department → Employee (One-to-Many, head is also Employee)
+Response body is always `{ "error": "message" }`. Frontend reads `err?.error?.error`.
 
-## How to Start Each Session
-Run /init first — Claude Code will read this file
-Say: "Follow our CLAUDE.md conventions for all code"
+### ApplicationDbContext
+- `UpdateAuditFields()` in `SaveChangesAsync` auto-sets `CreatedAt` (Added) and `UpdatedAt` (Modified) on all `BaseEntity` subclasses — never set these manually.
+- All entity EF configurations live in `Infrastructure/Configurations/` and are loaded via `ApplyConfigurationsFromAssembly`.
+
+### DataSeeder (runs on every startup, idempotent)
+Seeds on first run: Roles, Departments (Engineering/HR/Finance), Designations, LeaveTypes (Annual 15d / Sick 10d / Casual 7d), Admin user.
+- Default admin: `admin@hrms.com` / `Admin@123`
+
+### Migration History
+1. `InitialCreate` — all 17 entities, Guid PKs
+2. `AddRefreshTokensAndPasswordReset` — RefreshTokens table, PasswordResetToken/Expiry on Users
+3. `AddAttendanceLeaveChanges` — WorkHours on Attendances, TotalDays+ApprovedAt on LeaveRequests, RemainingDays (generated stored column) on LeaveBalances
+
+### Key Entity Notes
+- `Employee.Status`: Active, Inactive, OnLeave, Terminated
+- `Attendance.WorkHours`: `numeric(5,2)`, nullable
+- `LeaveBalance.RemainingDays`: PostgreSQL `GENERATED ALWAYS AS (TotalDays - UsedDays) STORED` — never set it manually
+- `Designation.Level`: 1–5 (1=Junior → 5=Manager), validated in `DesignationService`
+- All PKs are `Guid`
+
+### Auth Flow
+- `POST /api/auth/login` → returns `{ accessToken, refreshToken, expiresAt, user }`
+- `POST /api/auth/refresh-token` → rotates token (revokes old, issues new)
+- `POST /api/auth/logout` → revokes all active refresh tokens for user
+- JWT key in appsettings: `JwtSettings:SecretKey`
+
+---
+
+## Frontend Architecture
+
+### Core Wiring
+- `jwtInterceptor` — automatically injects `Authorization: Bearer <token>` on every request
+- `errorInterceptor` — global HTTP error handler
+- `authGuard` — redirects unauthenticated users to `/auth/login`
+- `roleGuard` — checks `data.roles` against the JWT claim, redirects to `/forbidden`
+- Tokens stored in `localStorage` as `hr_access_token` / `hr_refresh_token`
+- `AuthService.currentUser$` — `BehaviorSubject<User | null>` decoded from JWT via `jwtDecode`
+
+### Feature Routing
+All protected routes are children of `MainLayoutComponent` (which renders sidebar + topbar). Each feature folder has a `<feature>.routes.ts` with lazy-loaded `loadComponent`.
+
+### Date Handling Rules (important — bugs already fixed)
+- `<input type="date">` **always** gives the form control a plain `string` (`"YYYY-MM-DD"`), never a `Date` object.
+- When patching a form for edit, pass the string directly — do NOT convert to `new Date(...)`.
+- When displaying with Angular date pipe, use `value + 'T00:00:00' | date:'MMM d, y'` (appending local midnight) to avoid timezone off-by-one on UTC+ systems. Do not use `| date:'..':'UTC'` for date-only values.
+- The `fmtDate(d)` helper in components accepts `Date | string | null`.
+
+### Naming & Patterns
+- All components are standalone (no NgModules)
+- Reactive forms only (`FormBuilder`, `Validators`)
+- Services injected via constructor DI
+- Error display: `err?.error?.error` (matches ExceptionMiddleware response shape)
+- Confirm delete always uses `ConfirmDialogComponent` from `shared/components/confirm-dialog`
+- Role checks: `authService.hasRole('Admin')` / `authService.hasAnyRole(['Admin', 'HR'])`
+
+---
+
+## Configuration Files
+| File | Purpose |
+|---|---|
+| `backend/src/API/appsettings.json` | Connection string, JWT settings, SMTP |
+| `backend/src/API/Properties/launchSettings.json` | HTTP/HTTPS ports |
+| `frontend/src/environments/environment.ts` | `apiBaseUrl: http://localhost:5284/api` |
+| `frontend/proxy.conf.json` | Dev proxy: `/api/*` → `http://localhost:5284` |

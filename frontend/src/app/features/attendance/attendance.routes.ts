@@ -1,16 +1,28 @@
 import { Routes } from '@angular/router';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-
-@Component({
-  selector: 'app-attendance',
-  standalone: true,
-  imports: [CommonModule, MatCardModule],
-  template: '<div><h1 class="text-3xl font-bold mb-6">Attendance</h1><mat-card class="p-6"><p>Attendance module - Coming soon!</p></mat-card></div>'
-})
-export class AttendanceComponent {}
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const attendanceRoutes: Routes = [
-  { path: '', component: AttendanceComponent }
+  {
+    path: '',
+    loadComponent: () =>
+      import('./calendar/attendance-calendar.component').then(
+        m => m.AttendanceCalendarComponent
+      ),
+  },
+  {
+    path: 'team-summary',
+    loadComponent: () =>
+      import('./team-summary/attendance-team-summary.component').then(
+        m => m.AttendanceTeamSummaryComponent
+      ),
+    canActivate: [roleGuard],
+    data: { roles: ['Admin', 'HR', 'Manager'] },
+  },
+  {
+    path: 'monthly-report',
+    loadComponent: () =>
+      import('./monthly-report/attendance-monthly-report.component').then(
+        m => m.AttendanceMonthlyReportComponent
+      ),
+  },
 ];

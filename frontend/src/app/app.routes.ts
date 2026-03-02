@@ -80,7 +80,7 @@ export const routes: Routes = [
       {
         path: 'assets',
         canActivate: [roleGuard],
-        data: { roles: ['Admin', 'HR'] },
+        data: { roles: ['Admin', 'HR', 'Manager', 'Employee'] },
         loadChildren: () => import('./features/assets/assets.routes').then(m => m.assetsRoutes)
       },
       {

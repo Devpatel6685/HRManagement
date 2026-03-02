@@ -5,6 +5,7 @@ public enum ApplicantStatus
     Applied,
     Shortlisted,
     Interviewed,
+    Offered,
     Hired,
     Rejected
 }

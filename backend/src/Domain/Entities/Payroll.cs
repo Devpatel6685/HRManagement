@@ -1,4 +1,5 @@
 using HRManagement.Domain.Common;
+using HRManagement.Domain.Enums;
 
 namespace HRManagement.Domain.Entities;
 
@@ -12,6 +13,7 @@ public class Payroll : BaseEntity
     public decimal Allowances { get; set; }
     public decimal Deductions { get; set; }
     public decimal NetSalary { get; set; }
+    public PayrollStatus Status { get; set; } = PayrollStatus.Generated;
     public DateTime? PaidOn { get; set; }
 
     public Employee Employee { get; set; } = null!;

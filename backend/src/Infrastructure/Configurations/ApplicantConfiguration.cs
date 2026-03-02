@@ -12,7 +12,10 @@ public class ApplicantConfiguration : IEntityTypeConfiguration<Applicant>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Name).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Email).IsRequired().HasMaxLength(200);
+        builder.Property(e => e.Phone).HasMaxLength(30);
         builder.Property(e => e.Resume).HasMaxLength(500);
+        builder.Property(e => e.ResumeFileName).HasMaxLength(300);
+        builder.Property(e => e.Notes).HasMaxLength(2000);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
 
         builder.HasOne(e => e.JobPosting)

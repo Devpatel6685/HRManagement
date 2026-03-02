@@ -10,6 +10,7 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
     {
         builder.ToTable("Attendances");
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.WorkHours).HasPrecision(5, 2);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
         builder.HasIndex(e => new { e.EmployeeId, e.Date }).IsUnique();
 

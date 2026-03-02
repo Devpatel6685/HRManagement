@@ -137,7 +137,7 @@ public class AuthService : IAuthService
 
         _context.Users.Add(user);
 
-        _context.Employees.Add(new Employee
+        var employee = new Employee
         {
             UserId       = user.Id,
             EmployeeCode = $"EMP{DateTime.UtcNow:yyyyMMddHHmmss}",
@@ -145,7 +145,24 @@ public class AuthService : IAuthService
             LastName     = dto.LastName,
             JoinDate     = DateOnly.FromDateTime(DateTime.UtcNow),
             Status       = EmployeeStatus.Active,
-        });
+        };
+
+        _context.Employees.Add(employee);
+
+        // Seed leave balances for the current year
+        var leaveTypes  = await _context.LeaveTypes.ToListAsync();
+        var currentYear = DateTime.UtcNow.Year;
+        foreach (var lt in leaveTypes)
+        {
+            _context.LeaveBalances.Add(new LeaveBalance
+            {
+                EmployeeId  = employee.Id,
+                LeaveTypeId = lt.Id,
+                Year        = currentYear,
+                TotalDays   = lt.MaxDaysPerYear,
+                UsedDays    = 0,
+            });
+        }
 
         await _context.SaveChangesAsync();
     }

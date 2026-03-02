@@ -28,6 +28,9 @@ namespace HRManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("AppliedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -44,10 +47,22 @@ namespace HRManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<string>("Resume")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ResumeFileName")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -92,6 +107,9 @@ namespace HRManagement.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
@@ -141,12 +159,44 @@ namespace HRManagement.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("WorkHours")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId", "Date")
                         .IsUnique();
 
                     b.ToTable("Attendances", (string)null);
+                });
+
+            modelBuilder.Entity("HRManagement.Domain.Entities.AttendanceBreak", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AttendanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly?>("BreakEnd")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("BreakStart")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendanceId");
+
+                    b.ToTable("AttendanceBreaks", (string)null);
                 });
 
             modelBuilder.Entity("HRManagement.Domain.Entities.Department", b =>
@@ -368,6 +418,9 @@ namespace HRManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("ClosedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -383,6 +436,10 @@ namespace HRManagement.Infrastructure.Migrations
 
                     b.Property<DateTime>("PostedOn")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Requirements")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -419,6 +476,11 @@ namespace HRManagement.Infrastructure.Migrations
                     b.Property<Guid>("LeaveTypeId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("RemainingDays")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("integer")
+                        .HasComputedColumnSql("\"TotalDays\" - \"UsedDays\"", true);
+
                     b.Property<int>("TotalDays")
                         .HasColumnType("integer");
 
@@ -447,8 +509,17 @@ namespace HRManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AlternativePhone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("ApprovedById")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("AvailableOnPhone")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -467,6 +538,10 @@ namespace HRManagement.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -474,6 +549,9 @@ namespace HRManagement.Infrastructure.Migrations
 
                     b.Property<DateOnly>("ToDate")
                         .HasColumnType("date");
+
+                    b.Property<int>("TotalDays")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -550,6 +628,11 @@ namespace HRManagement.Infrastructure.Migrations
                     b.Property<DateTime?>("PaidOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -581,6 +664,10 @@ namespace HRManagement.Infrastructure.Migrations
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Improvements")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<string>("Period")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -594,6 +681,10 @@ namespace HRManagement.Infrastructure.Migrations
 
                     b.Property<Guid>("ReviewerId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Strengths")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -811,6 +902,17 @@ namespace HRManagement.Infrastructure.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("HRManagement.Domain.Entities.AttendanceBreak", b =>
+                {
+                    b.HasOne("HRManagement.Domain.Entities.Attendance", "Attendance")
+                        .WithMany("Breaks")
+                        .HasForeignKey("AttendanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attendance");
+                });
+
             modelBuilder.Entity("HRManagement.Domain.Entities.Department", b =>
                 {
                     b.HasOne("HRManagement.Domain.Entities.Employee", "HeadEmployee")
@@ -999,6 +1101,11 @@ namespace HRManagement.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("HRManagement.Domain.Entities.Attendance", b =>
+                {
+                    b.Navigation("Breaks");
                 });
 
             modelBuilder.Entity("HRManagement.Domain.Entities.Department", b =>

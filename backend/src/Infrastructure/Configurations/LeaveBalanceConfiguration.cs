@@ -11,6 +11,8 @@ public class LeaveBalanceConfiguration : IEntityTypeConfiguration<LeaveBalance>
         builder.ToTable("LeaveBalances");
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => new { e.EmployeeId, e.LeaveTypeId, e.Year }).IsUnique();
+        builder.Property(e => e.RemainingDays)
+               .HasComputedColumnSql("\"TotalDays\" - \"UsedDays\"", stored: true);
 
         builder.HasOne(e => e.Employee)
                .WithMany(emp => emp.LeaveBalances)

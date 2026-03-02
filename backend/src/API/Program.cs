@@ -108,6 +108,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IDesignationService, DesignationService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IJobPostingService, JobPostingService>();
+builder.Services.AddScoped<IApplicantService, ApplicantService>();
+builder.Services.AddScoped<IPerformanceReviewService, PerformanceReviewService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
 
 // Register Infrastructure Repositories
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
