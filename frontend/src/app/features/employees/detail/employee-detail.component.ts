@@ -9,17 +9,23 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { AssetService } from '../../../core/services/asset.service';
 import { LeaveService } from '../../../core/services/leave.service';
 import { AttendanceService } from '../../../core/services/attendance.service';
 import { PayrollService } from '../../../core/services/payroll.service';
+import { TrainingService } from '../../../core/services/training.service';
+import { DocumentService } from '../../../core/services/document.service';
 import { EmployeeDetail } from '../../../models/employee.model';
 import { AssetDto } from '../../../models/asset.model';
 import { LeaveRequestDto, LeaveBalanceDto } from '../../../models/leave.model';
 import { MonthlyReportDto } from '../../../models/attendance.model';
 import { PayrollDto } from '../../../models/payroll.model';
+import { EmployeeTrainingDto } from '../../../models/training.model';
+import { DocumentDto } from '../../../models/document.model';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -33,6 +39,7 @@ import {
     MatTabsModule, MatCardModule, MatButtonModule,
     MatIconModule, MatDividerModule,
     MatProgressSpinnerModule, MatDialogModule, MatSnackBarModule,
+    MatTooltipModule, FormsModule,
   ],
   template: `
     <!-- Loading -->
@@ -398,15 +405,118 @@ import {
         </mat-tab>
 
         <!-- ── Documents Tab ─────────────────────────────────── -->
-        <mat-tab label="Documents">
-          <div class="py-8 text-center text-gray-400">
-            <mat-icon style="font-size:3rem;width:3rem;height:3rem;" class="mb-3">folder</mat-icon>
-            <p class="font-medium">Documents coming soon</p>
+        <mat-tab *ngIf="showHiddenModules" label="Documents">
+          <div class="py-4">
+
+            <!-- Upload panel (Admin/HR only) -->
+            <div *ngIf="canEdit" class="bg-white rounded-xl border p-4 mb-5">
+              <p class="text-sm font-semibold text-gray-700 mb-3">Upload Document</p>
+
+              <!-- Drag-drop zone -->
+              <div class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors"
+                   [class.border-indigo-400]="isDragOver"
+                   [class.bg-indigo-50]="isDragOver"
+                   [class.border-gray-200]="!isDragOver"
+                   (click)="fileInput.click()"
+                   (dragover)="onDragOver($event)"
+                   (dragleave)="isDragOver = false"
+                   (drop)="onDrop($event)">
+                <mat-icon class="text-gray-300 mb-2"
+                          style="font-size:2.5rem;width:2.5rem;height:2.5rem;">upload_file</mat-icon>
+                <p *ngIf="!selectedFile" class="text-sm text-gray-500">
+                  Drag &amp; drop a file here, or <span class="text-indigo-600 font-medium">click to browse</span>
+                </p>
+                <p *ngIf="selectedFile" class="text-sm font-medium text-indigo-700">
+                  {{ selectedFile.name }}
+                  <span class="text-gray-400 font-normal ml-1">({{ formatFileSize(selectedFile.size) }})</span>
+                </p>
+                <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG — max 5 MB</p>
+                <input #fileInput type="file" class="hidden"
+                       accept=".pdf,.jpg,.jpeg,.png"
+                       (change)="onFileSelected($event)" />
+              </div>
+
+              <!-- Doc type + Upload button -->
+              <div class="flex items-center gap-3 mt-3">
+                <select [(ngModel)]="selectedDocType"
+                        class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700
+                               focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  <option value="Offer">Offer Letter</option>
+                  <option value="Payslip">Payslip</option>
+                  <option value="ID">ID Document</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Other">Other</option>
+                </select>
+                <button mat-raised-button color="primary"
+                        [disabled]="!selectedFile || uploading"
+                        (click)="uploadDocument()">
+                  <mat-spinner *ngIf="uploading" diameter="18" class="mr-1"></mat-spinner>
+                  <mat-icon *ngIf="!uploading">upload</mat-icon>
+                  {{ uploading ? 'Uploading...' : 'Upload' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="docsLoading" class="flex justify-center py-10">
+              <mat-spinner diameter="36"></mat-spinner>
+            </div>
+
+            <!-- Empty -->
+            <div *ngIf="!docsLoading && documents.length === 0"
+                 class="flex flex-col items-center py-10 text-gray-400">
+              <mat-icon style="font-size:3rem;width:3rem;height:3rem;" class="mb-2">folder_open</mat-icon>
+              <p class="font-medium">No documents uploaded</p>
+            </div>
+
+            <!-- Document list -->
+            <div *ngIf="!docsLoading && documents.length > 0"
+                 class="bg-white rounded-xl border overflow-hidden">
+              <div *ngFor="let doc of documents; let last = last"
+                   class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                   [class.border-b]="!last">
+
+                <!-- Type badge -->
+                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold"
+                      [ngClass]="docTypeBadgeClass(doc.docType)">
+                  {{ doc.docType }}
+                </span>
+
+                <!-- File info -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ doc.fileName }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">
+                    {{ formatFileSize(doc.fileSize) }}
+                    <span class="mx-1">·</span>
+                    {{ doc.uploadedOn | date:'MMM d, y' }}
+                    <span *ngIf="doc.uploadedByName" class="mx-1">·</span>
+                    <span *ngIf="doc.uploadedByName">{{ doc.uploadedByName }}</span>
+                  </p>
+                </div>
+
+                <!-- Actions -->
+                <button mat-icon-button (click)="downloadDocument(doc)"
+                        matTooltip="Download" class="!w-8 !h-8 shrink-0">
+                  <mat-icon class="text-indigo-600"
+                            style="font-size:1.1rem;width:1.1rem;height:1.1rem;line-height:1.1rem;">
+                    download
+                  </mat-icon>
+                </button>
+                <button *ngIf="canEdit" mat-icon-button (click)="deleteDocument(doc)"
+                        matTooltip="Delete" class="!w-8 !h-8 shrink-0">
+                  <mat-icon class="text-red-400"
+                            style="font-size:1.1rem;width:1.1rem;height:1.1rem;line-height:1.1rem;">
+                    delete
+                  </mat-icon>
+                </button>
+              </div>
+            </div>
+
           </div>
         </mat-tab>
 
         <!-- ── Assets Tab ─────────────────────────────────────── -->
-        <mat-tab label="Assets">
+        <mat-tab *ngIf="showHiddenModules" label="Assets">
           <div class="py-4">
 
             <!-- Loading -->
@@ -457,6 +567,64 @@ import {
           </div>
         </mat-tab>
 
+        <!-- ── Training Tab ───────────────────────────────────── -->
+        <mat-tab *ngIf="showHiddenModules" label="Training">
+          <div class="py-4">
+
+            <!-- Loading -->
+            <div *ngIf="trainingLoading" class="flex justify-center py-10">
+              <mat-spinner diameter="36"></mat-spinner>
+            </div>
+
+            <!-- Empty -->
+            <div *ngIf="!trainingLoading && employeeTrainings.length === 0"
+                 class="flex flex-col items-center py-10 text-gray-400">
+              <mat-icon style="font-size:3rem;width:3rem;height:3rem;" class="mb-2">school</mat-icon>
+              <p class="font-medium">No training records</p>
+              <p class="text-sm">This employee has not been enrolled in any training programs.</p>
+            </div>
+
+            <!-- Training table -->
+            <div *ngIf="!trainingLoading && employeeTrainings.length > 0"
+                 class="bg-white rounded-xl border overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                  <tr>
+                    <th class="px-4 py-3 text-left">Training</th>
+                    <th class="px-4 py-3 text-left">Trainer</th>
+                    <th class="px-4 py-3 text-left">Start</th>
+                    <th class="px-4 py-3 text-left">End</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-center">Score</th>
+                    <th class="px-4 py-3 text-left">Completed On</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr *ngFor="let t of employeeTrainings" class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium text-gray-900">{{ t.trainingTitle }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ t.trainer }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ t.startDate + 'T00:00:00' | date:'MMM d, y' }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ t.endDate + 'T00:00:00' | date:'MMM d, y' }}</td>
+                    <td class="px-4 py-3">
+                      <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                            [ngClass]="trainingStatusClass(t.status)">
+                        {{ t.status }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-center font-semibold text-gray-700">
+                      {{ t.score != null ? t.score : '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-500">
+                      {{ t.completionDate ? (t.completionDate | date:'MMM d, y') : '—' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </mat-tab>
+
       </mat-tab-group>
     </div>
   `,
@@ -484,8 +652,23 @@ export class EmployeeDetailComponent implements OnInit {
   payrollHistory: PayrollDto[] = [];
   payrollLoading = false;
 
+  // Training
+  employeeTrainings: EmployeeTrainingDto[] = [];
+  trainingLoading = false;
+
+  // Documents
+  documents: DocumentDto[] = [];
+  docsLoading = false;
+  isDragOver = false;
+  selectedFile: File | null = null;
+  selectedDocType = 'Offer';
+  uploading = false;
+
   canEdit   = false;
   canDelete = false;
+
+  // TEMP HIDDEN — set true to show to client tomorrow
+  readonly showHiddenModules = true;
 
   readonly monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -497,6 +680,8 @@ export class EmployeeDetailComponent implements OnInit {
     private leaveService: LeaveService,
     private attendanceService: AttendanceService,
     private payrollService: PayrollService,
+    private trainingService: TrainingService,
+    private documentService: DocumentService,
     private authService: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -516,6 +701,8 @@ export class EmployeeDetailComponent implements OnInit {
         this.loadLeave(emp.id);
         this.loadAttendance(emp.id);
         this.loadPayroll(emp.id);
+        this.loadTrainings(emp.id);
+        this.loadDocuments(emp.id);
         this.cdr.detectChanges();
       },
       error: () => this.router.navigate(['/employees']),
@@ -555,6 +742,14 @@ export class EmployeeDetailComponent implements OnInit {
     this.attendanceService.getMonthlyReport(employeeId, this.attMonth, this.attYear).subscribe({
       next: data => { this.attendanceReport = data; this.attendanceLoading = false; this.cdr.detectChanges(); },
       error: ()  => { this.attendanceLoading = false; this.cdr.detectChanges(); },
+    });
+  }
+
+  loadTrainings(employeeId: string): void {
+    this.trainingLoading = true;
+    this.trainingService.getMyTrainings(employeeId).subscribe({
+      next: data => { this.employeeTrainings = data; this.trainingLoading = false; this.cdr.detectChanges(); },
+      error: ()   => { this.trainingLoading = false; this.cdr.detectChanges(); },
     });
   }
 
@@ -632,6 +827,15 @@ export class EmployeeDetailComponent implements OnInit {
     return status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
   }
 
+  trainingStatusClass(status: string): string {
+    return ({
+      Enrolled:   'bg-blue-100 text-blue-800',
+      InProgress: 'bg-yellow-100 text-yellow-800',
+      Completed:  'bg-green-100 text-green-800',
+      Dropped:    'bg-gray-100 text-gray-600',
+    } as any)[status] ?? 'bg-gray-100 text-gray-600';
+  }
+
   assetStatusClass(status: string): string {
     return ({
       Available:        'bg-green-100 text-green-800',
@@ -643,6 +847,105 @@ export class EmployeeDetailComponent implements OnInit {
 
   assetStatusLabel(status: string): string {
     return status === 'UnderMaintenance' ? 'Maintenance' : status;
+  }
+
+  // ── Documents ────────────────────────────────────────────────
+
+  loadDocuments(employeeId: string): void {
+    this.docsLoading = true;
+    this.documentService.getEmployeeDocuments(employeeId).subscribe({
+      next: data => { this.documents = data; this.docsLoading = false; this.cdr.detectChanges(); },
+      error: ()   => { this.docsLoading = false; this.cdr.detectChanges(); },
+    });
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    const file = event.dataTransfer?.files[0];
+    if (file) this.selectedFile = file;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) this.selectedFile = input.files[0];
+  }
+
+  uploadDocument(): void {
+    if (!this.selectedFile || !this.employee) return;
+    this.uploading = true;
+    this.documentService.uploadDocument(this.employee.id, this.selectedFile, this.selectedDocType).subscribe({
+      next: doc => {
+        this.documents = [doc, ...this.documents];
+        this.selectedFile = null;
+        this.uploading = false;
+        this.snackBar.open('Document uploaded.', 'OK', { duration: 3000 });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.uploading = false;
+        this.snackBar.open(err?.error?.error ?? 'Upload failed.', 'Close', { duration: 4000 });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  downloadDocument(doc: DocumentDto): void {
+    this.documentService.downloadDocument(doc.id).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = doc.fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.snackBar.open('Download failed.', 'Close', { duration: 3000 }),
+    });
+  }
+
+  deleteDocument(doc: DocumentDto): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Document',
+        message: `Delete "${doc.fileName}"? This action cannot be undone.`,
+        icon: 'delete',
+        confirmLabel: 'Delete',
+        confirmColor: 'warn',
+      } as ConfirmDialogData,
+    });
+    ref.afterClosed().subscribe((ok: boolean) => {
+      if (!ok) return;
+      this.documentService.deleteDocument(doc.id).subscribe({
+        next: () => {
+          this.documents = this.documents.filter(d => d.id !== doc.id);
+          this.snackBar.open('Document deleted.', 'OK', { duration: 3000 });
+          this.cdr.detectChanges();
+        },
+        error: () => this.snackBar.open('Delete failed.', 'Close', { duration: 3000 }),
+      });
+    });
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  docTypeBadgeClass(docType: string): string {
+    return ({
+      Offer:    'bg-blue-100 text-blue-800',
+      Payslip:  'bg-green-100 text-green-800',
+      ID:       'bg-yellow-100 text-yellow-800',
+      Contract: 'bg-purple-100 text-purple-800',
+      Other:    'bg-gray-100 text-gray-600',
+    } as any)[docType] ?? 'bg-gray-100 text-gray-600';
   }
 
   // ── Employee actions ─────────────────────────────────────────

@@ -9,6 +9,7 @@ public class Training : BaseEntity
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string Trainer { get; set; } = string.Empty;
+    public int MaxParticipants { get; set; }
 
     public ICollection<EmployeeTraining> EmployeeTrainings { get; set; } = new List<EmployeeTraining>();
 }

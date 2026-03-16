@@ -12,5 +12,6 @@ public class TrainingConfiguration : IEntityTypeConfiguration<Training>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Title).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Trainer).HasMaxLength(200);
+        builder.Property(e => e.MaxParticipants).IsRequired();
     }
 }

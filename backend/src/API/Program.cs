@@ -115,6 +115,10 @@ builder.Services.AddScoped<IJobPostingService, JobPostingService>();
 builder.Services.AddScoped<IApplicantService, ApplicantService>();
 builder.Services.AddScoped<IPerformanceReviewService, PerformanceReviewService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<ITrainingService, TrainingService>();
+builder.Services.Configure<DocumentStorageOptions>(opt =>
+    opt.BasePath = Path.Combine(builder.Environment.ContentRootPath, "uploads"));
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 
 // Register Infrastructure Repositories
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();

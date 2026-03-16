@@ -9,6 +9,7 @@ public class EmployeeTraining : BaseEntity
     public Guid TrainingId { get; set; }
     public EmployeeTrainingStatus Status { get; set; } = EmployeeTrainingStatus.Enrolled;
     public DateTime? CompletionDate { get; set; }
+    public decimal? Score { get; set; }
 
     public Employee Employee { get; set; } = null!;
     public Training Training { get; set; } = null!;

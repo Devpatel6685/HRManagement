@@ -21,6 +21,9 @@ public interface IApplicationDbContext
     DbSet<Applicant> Applicants { get; }
     DbSet<PerformanceReview> PerformanceReviews { get; }
     DbSet<Asset> Assets { get; }
+    DbSet<Training> Trainings { get; }
+    DbSet<EmployeeTraining> EmployeeTrainings { get; }
+    DbSet<Document> Documents { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

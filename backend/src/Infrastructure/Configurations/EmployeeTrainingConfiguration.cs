@@ -12,6 +12,7 @@ public class EmployeeTrainingConfiguration : IEntityTypeConfiguration<EmployeeTr
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => new { e.EmployeeId, e.TrainingId }).IsUnique();
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(e => e.Score).HasColumnType("numeric(5,2)");
 
         builder.HasOne(e => e.Employee)
                .WithMany(emp => emp.EmployeeTrainings)
